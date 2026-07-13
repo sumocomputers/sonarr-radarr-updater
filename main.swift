@@ -19,10 +19,10 @@ func resolveScriptPath() -> String? {
     return nil
 }
 
-// Pulls the actual URL a "<AppName>: using <url>" line reported, so the
+// Pulls the actual URL a "<AppName>: Using <url>" line reported, so the
 // UI can show what was really resolved rather than guessing independently.
 func extractResolvedURL(appName: String, from text: String) -> String? {
-    let marker = "\(appName): using "
+    let marker = "\(appName): Using "
     for line in text.split(separator: "\n") {
         if let range = line.range(of: marker) {
             return String(line[range.upperBound...]).trimmingCharacters(in: .whitespaces)
@@ -110,14 +110,14 @@ struct ContentView: View {
 
     private var sonarrPlaceholder: String {
         if let resolved = model.sonarrResolvedURL {
-            return "Auto-Detected from config.xml: \(resolved) | Enter your own URL & Port to override & select Run Again."
+            return "Auto-Detected Port & URL from config.xml: \(resolved) | Enter your own URL & Port to override & select Run Again."
         }
         return Self.defaultPlaceholder
     }
 
     private var radarrPlaceholder: String {
         if let resolved = model.radarrResolvedURL {
-            return "Auto-Detected from config.xml: \(resolved) | Enter your own URL & Port to override & select Run Again."
+            return "Auto-Detected Port & URL from config.xml: \(resolved) | Enter your own URL & Port to override & select Run Again."
         }
         return Self.defaultPlaceholder
     }
@@ -137,7 +137,7 @@ struct ContentView: View {
                     Text("Done")
                         .font(.headline)
                 } else {
-                    Text("Sonarr-Radarr Updater for Apple Silicon")
+                    Text("Sonarr-Radarr-Updater for Apple Silicon (M series)")
                         .font(.headline)
                 }
                 Spacer()
@@ -150,16 +150,14 @@ struct ContentView: View {
 
             Divider()
 
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
+            VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text("Sonarr URL")
-                        .frame(width: 80, alignment: .leading)
                     TextField(sonarrPlaceholder, text: $sonarrURL)
                         .textFieldStyle(.roundedBorder)
                 }
-                HStack {
+                VStack(alignment: .leading, spacing: 2) {
                     Text("Radarr URL")
-                        .frame(width: 80, alignment: .leading)
                     TextField(radarrPlaceholder, text: $radarrURL)
                         .textFieldStyle(.roundedBorder)
                 }
@@ -184,7 +182,7 @@ struct ContentView: View {
                 }
             }
         }
-        .frame(width: 920, height: 480)
+        .frame(width: 900, height: 500)
         .onAppear {
             model.run(sonarrURL: sonarrURL, radarrURL: radarrURL)
         }
@@ -193,7 +191,7 @@ struct ContentView: View {
 
 struct UpdaterApp: App {
     var body: some Scene {
-        WindowGroup("Sonarr-Radarr Updater for Apple Silicon") {
+        WindowGroup("Sonarr-Radarr-Updater for Apple Silicon (M series)") {
             ContentView()
         }
         .windowResizability(.contentSize)
