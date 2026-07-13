@@ -1,5 +1,9 @@
 # Sonarr / Radarr Updater (macOS, Apple Silicon)
 
+**This is compatible only with Apple Silicon (M series) Macs. It will not
+work on Intel-based Macs** — the update script only looks for `osx-arm64`
+builds, and the app is compiled as an arm64-only binary.
+
 Sonarr and Radarr's macOS builds aren't notarized, so their built-in
 auto-updater doesn't work on Apple Silicon Macs — every update has to be
 downloaded, dropped into `/Applications`, and re-signed by hand. This
