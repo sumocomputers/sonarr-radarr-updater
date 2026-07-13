@@ -1,12 +1,12 @@
 #!/bin/zsh
 #
-# Builds "Sonarr Radarr Updater.app" from main.swift, bundles a copy of
+# Builds "Sonarr-Radarr-Updater.app" from main.swift, bundles a copy of
 # update-sonarr-radarr.sh into it, and ad-hoc signs the result.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${(%):-%x}")" && pwd)"
-APP_NAME="Sonarr Radarr Updater"
+APP_NAME="Sonarr-Radarr-Updater"
 DEST="$SCRIPT_DIR/$APP_NAME.app"
 BUILD_DIR="$(mktemp -d)"
 trap 'rm -rf "$BUILD_DIR"' EXIT
@@ -32,9 +32,9 @@ cat > "$DEST/Contents/Info.plist" << 'EOF'
 	<key>CFBundleIdentifier</key>
 	<string>local.sonarr-radarr-updater</string>
 	<key>CFBundleName</key>
-	<string>Sonarr Radarr Updater</string>
+	<string>Sonarr-Radarr-Updater</string>
 	<key>CFBundleDisplayName</key>
-	<string>Sonarr Radarr Updater</string>
+	<string>Sonarr-Radarr-Updater</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -56,7 +56,12 @@ EOF
 echo -n "APPL????" > "$DEST/Contents/PkgInfo"
 
 echo "Signing..."
+# Clear extended attributes first (e.g. com.apple.FinderInfo picked up from
+# Finder/iCloud) - codesign --deep silently produces a broken, unsealed
+# signature if any are present, instead of failing loudly.
+xattr -cr "$DEST"
 codesign --force --deep -s - "$DEST"
 xattr -rd com.apple.quarantine "$DEST" 2>/dev/null || true
+codesign --verify --deep --strict "$DEST"
 
 echo "Built: $DEST"

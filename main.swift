@@ -137,7 +137,7 @@ struct ContentView: View {
                     Text("Done")
                         .font(.headline)
                 } else {
-                    Text("Sonarr / Radarr Updater")
+                    Text("Sonarr-Radarr Updater for Apple Silicon")
                         .font(.headline)
                 }
                 Spacer()
@@ -193,7 +193,7 @@ struct ContentView: View {
 
 struct UpdaterApp: App {
     var body: some Scene {
-        WindowGroup("Sonarr / Radarr Updater") {
+        WindowGroup("Sonarr-Radarr Updater for Apple Silicon") {
             ContentView()
         }
         .windowResizability(.contentSize)

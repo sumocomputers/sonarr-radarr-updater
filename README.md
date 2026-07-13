@@ -57,7 +57,7 @@ SONARR_URL=http://localhost:8990 ./update-sonarr-radarr.sh
 
 ### macOS app
 
-`Sonarr Radarr Updater.app` is a small native SwiftUI wrapper that runs
+`Sonarr-Radarr-Updater.app` is a small native SwiftUI wrapper that runs
 the script and streams its output live in a window. Double-click it, or
 rebuild it yourself:
 
@@ -76,14 +76,23 @@ back to a copy bundled inside `Contents/Resources` — so either keep the
 two files together, or just copy the built `.app` on its own; it's fully
 self-contained.
 
-Since this is ad-hoc signed (not a paid Apple Developer ID), if you
-transfer it by a method that applies the quarantine flag (AirDrop,
-browser download, etc.), the first double-click may be blocked by
-Gatekeeper. If so, run once:
+**First launch after downloading:** this is ad-hoc signed, not notarized
+with a paid Apple Developer ID, so macOS will refuse to open it the first
+time. On a fresh download you'll see:
+
+> "Sonarr-Radarr-Updater" is damaged and can't be opened. You should move
+> it to the Trash.
+
+Despite the wording, it isn't actually damaged — this is just Gatekeeper's
+generic message for any unnotarized app downloaded from the internet. Fix
+it once per Mac:
 
 ```
-xattr -rd com.apple.quarantine "Sonarr Radarr Updater.app"
+xattr -rd com.apple.quarantine "Sonarr-Radarr-Updater.app"
 ```
+
+Then double-click normally. This is the same reason Sonarr/Radarr
+themselves need the `codesign`/`xattr` treatment this tool automates.
 
 ## Turning off Sonarr/Radarr's built-in updater
 

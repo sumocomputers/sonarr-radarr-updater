@@ -7,9 +7,9 @@
 	<key>CFBundleIdentifier</key>
 	<string>local.sonarr-radarr-updater</string>
 	<key>CFBundleName</key>
-	<string>Sonarr Radarr Updater</string>
+	<string>Sonarr-Radarr-Updater</string>
 	<key>CFBundleDisplayName</key>
-	<string>Sonarr Radarr Updater</string>
+	<string>Sonarr-Radarr-Updater</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

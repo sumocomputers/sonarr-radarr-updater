@@ -38,10 +38,15 @@ update_app() {
     local asset_regex="$4"    # regex matching the macOS arm64 .zip asset name
     local url_override="$5"   # optional base URL, e.g. http://localhost:8989
 
-    log "== $app_name: checking =="
+    log "$app_name: Checking for updates..."
+
+    if [[ ! -d "/Applications/${app_name}.app" ]]; then
+        log "$app_name: Not installed (/Applications/${app_name}.app not found) - Skipping"
+        return
+    fi
 
     if [[ ! -f "$config_path" ]]; then
-        log "$app_name: config.xml not found at '$config_path' - skipping"
+        log "$app_name: Config.xml not found at '$config_path' - Skipping"
         return
     fi
 
@@ -50,7 +55,7 @@ update_app() {
     port=$(sed -nE 's/.*<Port>([^<]+)<\/Port>.*/\1/p' "$config_path")
 
     if [[ -z "$api_key" ]]; then
-        log "$app_name: could not read ApiKey from config.xml - skipping"
+        log "$app_name: Could not read ApiKey from config.xml - Skipping"
         return
     fi
 
@@ -60,11 +65,11 @@ update_app() {
     elif [[ -n "$port" ]]; then
         base_url="http://localhost:${port}"
     else
-        log "$app_name: no URL override set and could not read Port from config.xml - skipping"
+        log "$app_name: No URL override set and could not read Port from config.xml - Skipping"
         return
     fi
 
-    log "$app_name: using $base_url"
+    log "$app_name: Using $base_url"
 
     local current_version
     current_version=$(curl -fsS --max-time 10 -H "X-Api-Key: $api_key" \
@@ -72,14 +77,14 @@ update_app() {
         | python3 -c 'import json,sys; print(json.load(sys.stdin)["version"])' 2>/dev/null)
 
     if [[ -z "$current_version" ]]; then
-        log "$app_name: could not read current version from $base_url (is it running, and is the URL correct?) - skipping"
+        log "$app_name: Could not read current version from $base_url (is it running, and is the URL correct?) - Skipping"
         return
     fi
 
     local release_json
     release_json=$(curl -fsS --max-time 20 "https://api.github.com/repos/${repo}/releases/latest")
     if [[ -z "$release_json" ]]; then
-        log "$app_name: could not reach GitHub releases API - skipping"
+        log "$app_name: Could not reach GitHub releases API - Skipping"
         return
     fi
 
@@ -96,21 +101,21 @@ for a in data.get('assets', []):
 " <<< "$release_json" 2>/dev/null)
 
     if [[ -z "$latest_version" ]]; then
-        log "$app_name: could not determine latest version from GitHub response - skipping"
+        log "$app_name: Could not determine latest version from GitHub response - Skipping"
         return
     fi
 
     if [[ "$current_version" == "$latest_version" ]]; then
-        log "$app_name: up to date ($current_version) - no action taken"
+        log "$app_name: Up to date ($current_version) - No update available. No action taken."
         return
     fi
 
     if [[ -z "$download_url" ]]; then
-        log "$app_name: new version $latest_version is available (currently $current_version) but no matching macOS Apple Silicon asset was found - skipping"
+        log "$app_name: New version $latest_version is available (currently $current_version) but no matching macOS Apple Silicon asset was found - Skipping"
         return
     fi
 
-    log "$app_name: update available: $current_version -> $latest_version"
+    log "$app_name: Update available: $current_version -> $latest_version"
 
     # 1. Quit the app (clean shutdown via its own API, then force-kill as fallback)
     curl -fsS --max-time 10 -X POST -H "X-Api-Key: $api_key" \
@@ -122,7 +127,7 @@ for a in data.get('assets', []):
     # 2. Download the Apple Silicon build
     local zip_path="$WORKDIR/${app_name}.zip"
     if ! curl -fsSL --max-time 300 -o "$zip_path" "$download_url"; then
-        log "$app_name: download failed from $download_url - aborting this app's update"
+        log "$app_name: Download failed from $download_url - Aborting this app's update"
         return
     fi
 
@@ -130,23 +135,23 @@ for a in data.get('assets', []):
     local extract_dir="$WORKDIR/${app_name}-extract"
     mkdir -p "$extract_dir"
     if ! ditto -xk "$zip_path" "$extract_dir" 2>>"$LOG_FILE"; then
-        log "$app_name: failed to extract downloaded archive - aborting this app's update"
+        log "$app_name: Failed to extract downloaded archive - Aborting this app's update"
         return
     fi
 
     local new_app="$extract_dir/${app_name}.app"
     if [[ ! -d "$new_app" ]]; then
-        log "$app_name: extracted archive did not contain ${app_name}.app - aborting this app's update"
+        log "$app_name: Extracted archive did not contain ${app_name}.app - Aborting this app's update"
         return
     fi
 
     # 4. Replace the installed app
     if ! rm -rf "/Applications/${app_name}.app"; then
-        log "$app_name: could not remove old /Applications/${app_name}.app - aborting this app's update"
+        log "$app_name: Could not remove old /Applications/${app_name}.app - Aborting this app's update"
         return
     fi
     if ! mv "$new_app" "/Applications/${app_name}.app"; then
-        log "$app_name: could not move new build into /Applications - aborting this app's update"
+        log "$app_name: Could not move new build into /Applications - Aborting this app's update"
         return
     fi
 
@@ -157,10 +162,10 @@ for a in data.get('assets', []):
     # 6. Relaunch
     open -a "/Applications/${app_name}.app"
 
-    log "$app_name: updated to $latest_version and relaunched. NOTE: you may need to click 'Allow' on a volume-access prompt the next time you use Add New in the UI."
+    log "$app_name: Updated to $latest_version and relaunched. NOTE: You may need to click 'Allow' on a volume-access prompt the next time you use Add New in the UI."
 }
 
 update_app "Sonarr" "Sonarr/Sonarr" "$HOME/.config/Sonarr/config.xml" 'osx-arm64-app\.zip$' "${SONARR_URL:-}"
 update_app "Radarr" "Radarr/Radarr" "$HOME/Library/Application Support/Radarr/config.xml" 'osx-app-core-arm64\.zip$' "${RADARR_URL:-}"
 
-log "== Done =="
+log "Done"
