@@ -30,7 +30,8 @@ still need to click **Allow** once per update.
 
 - Apple Silicon Mac
 - Sonarr and/or Radarr installed in `/Applications`
-- Standard config file locations:
+- Standard config file locations, used to read each app's API key (and,
+  unless overridden, its port):
   - Sonarr: `~/.config/Sonarr/config.xml`
   - Radarr: `~/Library/Application Support/Radarr/config.xml`
 - Assumes you're on the stable release branch (`main` for Sonarr, `master`
@@ -41,10 +42,18 @@ still need to click **Allow** once per update.
 ### Command line
 
 ```
-./update-servarr.sh
+./update-sonarr-radarr.sh
 ```
 
-Logs to `logs/update-servarr.log` next to the script.
+Logs to `logs/update-sonarr-radarr.log` next to the script.
+
+By default it talks to each app at `http://localhost:<port>`, reading the
+port from `config.xml`. To point at a different port or host, set
+`SONARR_URL` and/or `RADARR_URL`:
+
+```
+SONARR_URL=http://localhost:8990 ./update-sonarr-radarr.sh
+```
 
 ### macOS app
 
@@ -56,9 +65,16 @@ rebuild it yourself:
 ./build.sh
 ```
 
-The app looks for `update-servarr.sh` next to itself first, falling back
-to a copy bundled inside `Contents/Resources` — so either keep the two
-files together, or just copy the built `.app` on its own.
+It has Sonarr URL / Radarr URL fields at the top — leave them blank to
+auto-detect from `config.xml` (the field shows what was actually
+detected once a check completes), or type a URL to override it. Changes
+take effect the next time you click **Run Again**, and are remembered
+across launches.
+
+The app looks for `update-sonarr-radarr.sh` next to itself first, falling
+back to a copy bundled inside `Contents/Resources` — so either keep the
+two files together, or just copy the built `.app` on its own; it's fully
+self-contained.
 
 Since this is ad-hoc signed (not a paid Apple Developer ID), if you
 transfer it by a method that applies the quarantine flag (AirDrop,
@@ -87,7 +103,7 @@ above), or in Settings → General in the web UI.
 
 ## Scheduling
 
-Run `update-servarr.sh` on whatever cadence you like via a `launchd`
+Run `update-sonarr-radarr.sh` on whatever cadence you like via a `launchd`
 LaunchAgent or `cron`. It's safe to run as often as you want — it's a
 no-op when there's nothing new.
 

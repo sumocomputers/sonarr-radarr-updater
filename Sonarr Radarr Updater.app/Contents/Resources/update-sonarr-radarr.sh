@@ -4,6 +4,12 @@
 # quits the app, downloads + installs the update, self-signs it, and
 # relaunches it. If already up to date, logs that and exits 0.
 #
+# The base URL used to reach each app's local API can be overridden with
+# the SONARR_URL / RADARR_URL environment variables (e.g.
+# "http://localhost:8989"). If unset, it's derived from the <Port> in the
+# app's own config.xml, same as before. The API key is always read from
+# config.xml regardless of URL override, since it isn't part of the URL.
+#
 # NOTE: this does not (and cannot) handle the "Allow access to this
 # volume?" prompt that macOS shows the first time the freshly-signed app
 # touches a folder in the UI (e.g. Add New -> root folder picker). That's
@@ -15,7 +21,7 @@ set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${(%):-%x}")" && pwd)"
 LOG_DIR="$SCRIPT_DIR/logs"
-LOG_FILE="$LOG_DIR/update-servarr.log"
+LOG_FILE="$LOG_DIR/update-sonarr-radarr.log"
 mkdir -p "$LOG_DIR"
 
 WORKDIR="$(mktemp -d)"
@@ -30,6 +36,7 @@ update_app() {
     local repo="$2"           # e.g. Sonarr/Sonarr
     local config_path="$3"    # path to config.xml
     local asset_regex="$4"    # regex matching the macOS arm64 .zip asset name
+    local url_override="$5"   # optional base URL, e.g. http://localhost:8989
 
     log "== $app_name: checking =="
 
@@ -42,18 +49,30 @@ update_app() {
     api_key=$(sed -nE 's/.*<ApiKey>([^<]+)<\/ApiKey>.*/\1/p' "$config_path")
     port=$(sed -nE 's/.*<Port>([^<]+)<\/Port>.*/\1/p' "$config_path")
 
-    if [[ -z "$api_key" || -z "$port" ]]; then
-        log "$app_name: could not read ApiKey/Port from config.xml - skipping"
+    if [[ -z "$api_key" ]]; then
+        log "$app_name: could not read ApiKey from config.xml - skipping"
         return
     fi
 
+    local base_url
+    if [[ -n "$url_override" ]]; then
+        base_url="${url_override%/}"
+    elif [[ -n "$port" ]]; then
+        base_url="http://localhost:${port}"
+    else
+        log "$app_name: no URL override set and could not read Port from config.xml - skipping"
+        return
+    fi
+
+    log "$app_name: using $base_url"
+
     local current_version
     current_version=$(curl -fsS --max-time 10 -H "X-Api-Key: $api_key" \
-        "http://localhost:${port}/api/v3/system/status" \
+        "${base_url}/api/v3/system/status" \
         | python3 -c 'import json,sys; print(json.load(sys.stdin)["version"])' 2>/dev/null)
 
     if [[ -z "$current_version" ]]; then
-        log "$app_name: could not read current version from local API on port $port (is it running?) - skipping"
+        log "$app_name: could not read current version from $base_url (is it running, and is the URL correct?) - skipping"
         return
     fi
 
@@ -95,7 +114,7 @@ for a in data.get('assets', []):
 
     # 1. Quit the app (clean shutdown via its own API, then force-kill as fallback)
     curl -fsS --max-time 10 -X POST -H "X-Api-Key: $api_key" \
-        "http://localhost:${port}/api/v3/system/shutdown" >/dev/null 2>&1
+        "${base_url}/api/v3/system/shutdown" >/dev/null 2>&1
     sleep 4
     pkill -9 -x "$app_name" >/dev/null 2>&1
     sleep 1
@@ -141,7 +160,7 @@ for a in data.get('assets', []):
     log "$app_name: updated to $latest_version and relaunched. NOTE: you may need to click 'Allow' on a volume-access prompt the next time you use Add New in the UI."
 }
 
-update_app "Sonarr" "Sonarr/Sonarr" "$HOME/.config/Sonarr/config.xml" 'osx-arm64-app\.zip$'
-update_app "Radarr" "Radarr/Radarr" "$HOME/Library/Application Support/Radarr/config.xml" 'osx-app-core-arm64\.zip$'
+update_app "Sonarr" "Sonarr/Sonarr" "$HOME/.config/Sonarr/config.xml" 'osx-arm64-app\.zip$' "${SONARR_URL:-}"
+update_app "Radarr" "Radarr/Radarr" "$HOME/Library/Application Support/Radarr/config.xml" 'osx-app-core-arm64\.zip$' "${RADARR_URL:-}"
 
 log "== Done =="

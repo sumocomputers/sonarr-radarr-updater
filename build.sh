@@ -1,7 +1,7 @@
 #!/bin/zsh
 #
 # Builds "Sonarr Radarr Updater.app" from main.swift, bundles a copy of
-# update-servarr.sh into it, and ad-hoc signs the result.
+# update-sonarr-radarr.sh into it, and ad-hoc signs the result.
 
 set -euo pipefail
 
@@ -19,8 +19,8 @@ rm -rf "$DEST"
 mkdir -p "$DEST/Contents/MacOS" "$DEST/Contents/Resources"
 cp "$BUILD_DIR/UpdateServarrUI" "$DEST/Contents/MacOS/UpdateServarrUI"
 chmod +x "$DEST/Contents/MacOS/UpdateServarrUI"
-cp "$SCRIPT_DIR/update-servarr.sh" "$DEST/Contents/Resources/update-servarr.sh"
-chmod +x "$DEST/Contents/Resources/update-servarr.sh"
+cp "$SCRIPT_DIR/update-sonarr-radarr.sh" "$DEST/Contents/Resources/update-sonarr-radarr.sh"
+chmod +x "$DEST/Contents/Resources/update-sonarr-radarr.sh"
 
 cat > "$DEST/Contents/Info.plist" << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -38,9 +38,9 @@ cat > "$DEST/Contents/Info.plist" << 'EOF'
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1</string>
+	<string>1.0.0</string>
 	<key>CFBundleVersion</key>
-	<string>2</string>
+	<string>3</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>13.0</string>
 	<key>NSHighResolutionCapable</key>

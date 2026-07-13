@@ -4,18 +4,18 @@
 <dict>
 	<key>files</key>
 	<dict>
-		<key>Resources/update-servarr.sh</key>
+		<key>Resources/update-sonarr-radarr.sh</key>
 		<data>
-		b/wGEHDfQkiQnLBkbWAvLEyR424=
+		cx9lliHX67QXhNGGiHlZOUxSO9E=
 		</data>
 	</dict>
 	<key>files2</key>
 	<dict>
-		<key>Resources/update-servarr.sh</key>
+		<key>Resources/update-sonarr-radarr.sh</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			7ox5jozGbI8zDXMMFpGkDJVxHxM4avsgpiDRAhqqUmw=
+			6iVEd+mk3+OHgQ/OZLN+cUP1nO0bpEEVQN6e8sex9Dg=
 			</data>
 		</dict>
 	</dict>
