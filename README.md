@@ -1,0 +1,96 @@
+# Sonarr / Radarr Updater (macOS, Apple Silicon)
+
+Sonarr and Radarr's macOS builds aren't notarized, so their built-in
+auto-updater doesn't work on Apple Silicon Macs — every update has to be
+downloaded, dropped into `/Applications`, and re-signed by hand. This
+project automates that.
+
+It checks GitHub Releases for the latest Apple Silicon build of each app,
+compares it against the version currently running (via each app's own
+local API), and if there's a newer one:
+
+1. Shuts the app down cleanly (falls back to a force-kill)
+2. Downloads the `osx-arm64` build from GitHub
+3. Replaces `/Applications/Sonarr.app` or `/Applications/Radarr.app`
+4. Ad-hoc code-signs it and clears the quarantine flag
+5. Relaunches it
+
+If both apps are already up to date, it says so and exits — no download,
+no restart.
+
+## What this can't automate
+
+The first time you use **Add New** after an update, macOS will ask you to
+approve folder/volume access again. That's a live TCC permission dialog
+tied to user interaction in the app's UI, not something a script can
+pre-approve without editing the SIP-protected TCC database — so you'll
+still need to click **Allow** once per update.
+
+## Requirements
+
+- Apple Silicon Mac
+- Sonarr and/or Radarr installed in `/Applications`
+- Standard config file locations:
+  - Sonarr: `~/.config/Sonarr/config.xml`
+  - Radarr: `~/Library/Application Support/Radarr/config.xml`
+- Assumes you're on the stable release branch (`main` for Sonarr, `master`
+  for Radarr) — not `develop`/`nightly`
+
+## Usage
+
+### Command line
+
+```
+./update-servarr.sh
+```
+
+Logs to `logs/update-servarr.log` next to the script.
+
+### macOS app
+
+`Sonarr Radarr Updater.app` is a small native SwiftUI wrapper that runs
+the script and streams its output live in a window. Double-click it, or
+rebuild it yourself:
+
+```
+./build.sh
+```
+
+The app looks for `update-servarr.sh` next to itself first, falling back
+to a copy bundled inside `Contents/Resources` — so either keep the two
+files together, or just copy the built `.app` on its own.
+
+Since this is ad-hoc signed (not a paid Apple Developer ID), if you
+transfer it by a method that applies the quarantine flag (AirDrop,
+browser download, etc.), the first double-click may be blocked by
+Gatekeeper. If so, run once:
+
+```
+xattr -rd com.apple.quarantine "Sonarr Radarr Updater.app"
+```
+
+## Turning off Sonarr/Radarr's built-in updater
+
+Since the built-in updater is broken on Apple Silicon anyway, it's worth
+telling each app that updates are externally managed, so it stops
+offering an "Install now" that won't work:
+
+```
+curl -s -H "X-Api-Key: YOUR_API_KEY" "http://localhost:PORT/api/v3/config/host" \
+  | python3 -c 'import json,sys; d=json.load(sys.stdin); d["updateMechanism"]="external"; d["updateAutomatically"]=False; print(json.dumps(d))' \
+  | curl -s -X PUT -H "X-Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
+      -d @- "http://localhost:PORT/api/v3/config/host/1"
+```
+
+Find your API key and port in the app's `config.xml` (same paths as
+above), or in Settings → General in the web UI.
+
+## Scheduling
+
+Run `update-servarr.sh` on whatever cadence you like via a `launchd`
+LaunchAgent or `cron`. It's safe to run as often as you want — it's a
+no-op when there's nothing new.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
