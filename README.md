@@ -89,11 +89,8 @@ time. On a fresh download you'll see:
 
 Despite the wording, it isn't actually damaged — this is just Gatekeeper's
 generic message for any unnotarized app downloaded from the internet. Fix
-it once per Mac:
-
-```
-xattr -rd com.apple.quarantine "Sonarr-Radarr-Updater.app"
-```
+it once per Mac, running this from a Terminal in the same directory as
+the `.app` file: `xattr -rd com.apple.quarantine "Sonarr-Radarr-Updater.app"`
 
 Then double-click normally. This is the same reason Sonarr/Radarr
 themselves need the `codesign`/`xattr` treatment this tool automates.
