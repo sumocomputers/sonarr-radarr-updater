@@ -30,9 +30,12 @@ tied to user interaction in the app's UI, not something a script can
 pre-approve without editing the SIP-protected TCC database — so you'll
 still need to click **Allow** once per update.
 
+The easiest way to do this is open Sonarr and/or Radarr normally and select "Add New", even if you don't have any shows or movies to add. This will result in macOS prompt(s) for any new disk permissions needed, since the OS thinks the Sonarr and/or Radarr app are new.
+
 ## Requirements
 
-- Apple Silicon Mac
+- Apple Silicon Mac (M Series)
+- Sonarr and/or Radarr using http (https might work, but was not tested)
 - Sonarr and/or Radarr installed in `/Applications`
 - Standard config file locations, used to read each app's API key (and,
   unless overridden, its port):
