@@ -8,6 +8,9 @@ Since the built-in updater of Sonarr & Radarr was broken on Apple Silicon Macs, 
 
 I used Claude Code to create a script that also has a simple SwiftUI app so I could more easily update to the latest versions with less hassle. I have been happy with how the app works, but if you run into issues feel free to post them in Github issues. I can't guarantee I can fix them, but it would be good to have any problems documented.
 
+<img width="1012" height="644" alt="app-01" src="https://github.com/user-attachments/assets/23330cfe-e50d-4b7a-bdb3-9bb854905615" />
+
+
 **This is compatible only with Apple Silicon (M series) Macs. It will not
 work on Intel-based Macs** — the update script only looks for `osx-arm64`
 builds, and the app is compiled as an arm64-only binary.
