@@ -1,5 +1,13 @@
 # Sonarr / Radarr Updater (macOS, Apple Silicon)
 
+**Note on how this app was created**
+
+I am not a developer, but I have a few Apple Silicon Macs that run Sonarr & Radarr natively (not in Docker).
+
+Since the built-in updater of Sonarr & Radarr was broken on Apple Silicon Macs, I was tired of the tedious process involved in updating to the latest version. If you do this regularly, you know the annoyances.
+
+I used Claude Code to create a script that also has a simple SwiftUI app so I could more easily update to the latest versions with less hassle. I have been happy with how the app works, but if you run into issues feel free to post them in Github issues. I can't guarantee I can fix them, but it would be good to have any problems documented.
+
 **This is compatible only with Apple Silicon (M series) Macs. It will not
 work on Intel-based Macs** — the update script only looks for `osx-arm64`
 builds, and the app is compiled as an arm64-only binary.
