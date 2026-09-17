@@ -4,18 +4,18 @@
 <dict>
 	<key>files</key>
 	<dict>
-		<key>Resources/update-sonarr-radarr.sh</key>
+		<key>Resources/update-nzbget-sonarr-radarr.sh</key>
 		<data>
-		EjfOM7Fhp6Y9fhcIC6vq2hUAVoY=
+		MTxF08vGZ5xbC5bMkvkm2Vxng2M=
 		</data>
 	</dict>
 	<key>files2</key>
 	<dict>
-		<key>Resources/update-sonarr-radarr.sh</key>
+		<key>Resources/update-nzbget-sonarr-radarr.sh</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			6hsZT//Gcwrfi6ePKeDudpJ1J/XyPsqVmVe6aNdi6sc=
+			olEcySJciqyenbqNbOF8wCdiqgrliA5XxfQ/ckZUoz8=
 			</data>
 		</dict>
 	</dict>

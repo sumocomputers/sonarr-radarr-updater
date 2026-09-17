@@ -3,17 +3,17 @@ import SwiftUI
 // Resolves the update script's location at runtime so the app works
 // regardless of which Mac, username, or folder it's copied to.
 // Preference order:
-//   1. "update-sonarr-radarr.sh" sitting next to this .app (lets you edit
-//      the script in place without rebuilding the app)
+//   1. "update-nzbget-sonarr-radarr.sh" sitting next to this .app (lets
+//      you edit the script in place without rebuilding the app)
 //   2. A copy bundled inside the app's own Resources (so the .app alone
 //      is portable even if the sibling script isn't copied along with it)
 func resolveScriptPath() -> String? {
     let appURL = Bundle.main.bundleURL
-    let siblingURL = appURL.deletingLastPathComponent().appendingPathComponent("update-sonarr-radarr.sh")
+    let siblingURL = appURL.deletingLastPathComponent().appendingPathComponent("update-nzbget-sonarr-radarr.sh")
     if FileManager.default.fileExists(atPath: siblingURL.path) {
         return siblingURL.path
     }
-    if let bundled = Bundle.main.path(forResource: "update-sonarr-radarr", ofType: "sh") {
+    if let bundled = Bundle.main.path(forResource: "update-nzbget-sonarr-radarr", ofType: "sh") {
         return bundled
     }
     return nil
@@ -35,21 +35,23 @@ final class RunnerModel: ObservableObject {
     @Published var output: String = ""
     @Published var isRunning: Bool = false
     @Published var finished: Bool = false
+    @Published var nzbgetResolvedURL: String?
     @Published var sonarrResolvedURL: String?
     @Published var radarrResolvedURL: String?
 
     private var process: Process?
 
-    func run(sonarrURL: String, radarrURL: String) {
+    func run(nzbgetURL: String, sonarrURL: String, radarrURL: String) {
         guard !isRunning else { return }
         output = ""
         finished = false
         isRunning = true
+        nzbgetResolvedURL = nil
         sonarrResolvedURL = nil
         radarrResolvedURL = nil
 
         guard let scriptPath = resolveScriptPath() else {
-            output = "Couldn't find update-sonarr-radarr.sh.\n\nPlace it next to this app, or rebuild the app to bundle it."
+            output = "Couldn't find update-nzbget-sonarr-radarr.sh.\n\nPlace it next to this app, or rebuild the app to bundle it."
             isRunning = false
             finished = true
             return
@@ -60,8 +62,10 @@ final class RunnerModel: ObservableObject {
         proc.arguments = [scriptPath]
 
         var env = ProcessInfo.processInfo.environment
+        let trimmedNzbget = nzbgetURL.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedSonarr = sonarrURL.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedRadarr = radarrURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedNzbget.isEmpty { env["NZBGET_URL"] = trimmedNzbget }
         if !trimmedSonarr.isEmpty { env["SONARR_URL"] = trimmedSonarr }
         if !trimmedRadarr.isEmpty { env["RADARR_URL"] = trimmedRadarr }
         proc.environment = env
@@ -84,6 +88,7 @@ final class RunnerModel: ObservableObject {
                 guard let self else { return }
                 self.isRunning = false
                 self.finished = true
+                self.nzbgetResolvedURL = extractResolvedURL(appName: "NZBGet", from: self.output)
                 self.sonarrResolvedURL = extractResolvedURL(appName: "Sonarr", from: self.output)
                 self.radarrResolvedURL = extractResolvedURL(appName: "Radarr", from: self.output)
             }
@@ -103,10 +108,18 @@ final class RunnerModel: ObservableObject {
 
 struct ContentView: View {
     @StateObject private var model = RunnerModel()
+    @AppStorage("nzbgetURL") private var nzbgetURL: String = ""
     @AppStorage("sonarrURL") private var sonarrURL: String = ""
     @AppStorage("radarrURL") private var radarrURL: String = ""
 
     private static let defaultPlaceholder = "Using Auto-detected URL and Port. Enter your own URL & Port to override & select Run Again."
+
+    private var nzbgetPlaceholder: String {
+        if let resolved = model.nzbgetResolvedURL {
+            return "Auto-Detected Port & URL from nzbget.conf: \(resolved) | Enter your own URL & Port to override & select Run Again."
+        }
+        return Self.defaultPlaceholder
+    }
 
     private var sonarrPlaceholder: String {
         if let resolved = model.sonarrResolvedURL {
@@ -137,12 +150,12 @@ struct ContentView: View {
                     Text("Done")
                         .font(.headline)
                 } else {
-                    Text("Sonarr-Radarr-Updater for Apple Silicon (M series)")
+                    Text("NZBGet-Sonarr-Radarr-Updater for Apple Silicon (M series)")
                         .font(.headline)
                 }
                 Spacer()
                 Button(model.isRunning ? "Running…" : "Run Again") {
-                    model.run(sonarrURL: sonarrURL, radarrURL: radarrURL)
+                    model.run(nzbgetURL: nzbgetURL, sonarrURL: sonarrURL, radarrURL: radarrURL)
                 }
                 .disabled(model.isRunning)
             }
@@ -151,6 +164,11 @@ struct ContentView: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("NZBGet URL")
+                    TextField(nzbgetPlaceholder, text: $nzbgetURL)
+                        .textFieldStyle(.roundedBorder)
+                }
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Sonarr URL")
                     TextField(sonarrPlaceholder, text: $sonarrURL)
@@ -182,16 +200,16 @@ struct ContentView: View {
                 }
             }
         }
-        .frame(width: 900, height: 500)
+        .frame(width: 900, height: 580)
         .onAppear {
-            model.run(sonarrURL: sonarrURL, radarrURL: radarrURL)
+            model.run(nzbgetURL: nzbgetURL, sonarrURL: sonarrURL, radarrURL: radarrURL)
         }
     }
 }
 
 struct UpdaterApp: App {
     var body: some Scene {
-        WindowGroup("Sonarr-Radarr-Updater for Apple Silicon (M series)") {
+        WindowGroup("NZBGet-Sonarr-Radarr-Updater for Apple Silicon (M series)") {
             ContentView()
         }
         .windowResizability(.contentSize)
