@@ -1,5 +1,16 @@
 # NZBGet / Sonarr / Radarr Updater (macOS, Apple Silicon)
 
+**Note on how this app was created**
+
+I am not a developer, but I have a few Apple Silicon Macs that run Sonarr & Radarr natively (not in Docker).
+
+Since the built-in updater of Sonarr & Radarr was broken on Apple Silicon Macs, I was tired of the tedious process involved in updating to the latest version. If you do this regularly, you know the annoyances.
+
+I used Claude Code to create a script that also has a simple SwiftUI app so I could more easily update to the latest versions with less hassle. I have been happy with how the app works, but if you run into issues feel free to post them in Github issues. I can't guarantee I can fix them, but it would be good to have any problems documented.
+
+<img width="1012" height="644" alt="app-01" src="https://github.com/user-attachments/assets/23330cfe-e50d-4b7a-bdb3-9bb854905615" />
+
+
 **This is compatible only with Apple Silicon (M series) Macs. It will not
 work on Intel-based Macs** — the Sonarr/Radarr half of the update script
 only looks for `osx-arm64` builds, and the app is compiled as an
@@ -35,11 +46,14 @@ database — so you'll still need to click **Allow** once per update. This
 doesn't apply to NZBGet, since its signature (and the TCC grants tied to
 it) doesn't change on update.
 
+The easiest way to do this is open Sonarr and/or Radarr normally and select "Add New", even if you don't have any shows or movies to add. This will result in macOS prompt(s) for any new disk permissions needed, since the OS thinks the Sonarr and/or Radarr app are new.
+
 ## Requirements
 
-- Apple Silicon Mac
+- Apple Silicon Mac (M Series)
 - NZBGet, Sonarr, and/or Radarr installed in `/Applications` (any subset
   is fine — anything not installed is skipped with a log message)
+- Sonarr and/or Radarr using http (https might work, but was not tested)
 - Standard config file locations, used to read each app's control
   credentials (and, unless overridden, its port):
   - NZBGet: `~/Library/Application Support/NZBGet/nzbget.conf`
